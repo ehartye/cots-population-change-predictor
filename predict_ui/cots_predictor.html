@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COTS Change Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f4f8;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c5282;
+            text-align: center;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .control-group {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .value-display {
+            font-size: 0.9em;
+            color: #718096;
+        }
+        #gauge-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .gauge {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gauge-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 180deg,
+                #48bb78 0deg,
+                #ecc94b 120deg,
+                #f56565 240deg
+            );
+        }
+        .gauge::before {
+            content: '';
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            background: white;
+            border-radius: 50%;
+        }
+        .gauge-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+        .prediction {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .confidence {
+            font-size: 1.2em;
+            color: #718096;
+        }
+        .increase { color: #f56565; }
+        .decrease { color: #48bb78; }
+        .none { color: #ecc94b; }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <div>Predicting...</div>
+    </div>
+    <div class="container">
+        <h1>COTS Change Predictor</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3>Population Indicators</h3>
+                <div class="slider-container">
+                    <label for="cots">COTS Count</label>
+                    <input type="range" id="cots" min="0" max="20" value="0" step="1">
+                    <span class="value-display" id="cots-value">0</span>
+                </div>
+                <div class="slider-container">
+                    <label for="giant-clam">Giant Clam Count</label>
+                    <input type="range" id="giant-clam" min="0" max="50" value="0" step="1">
+                    <span class="value-display" id="giant-clam-value">0</span>
+                </div>
+                <div class="slider-container">
+                    <label for="parrotfish">Parrotfish Count</label>
+                    <input type="range" id="parrotfish" min="0" max="50" value="0" step="1">
+                    <span class="value-display" id="parrotfish-value">0</span>
+                </div>
+                <div class="slider-container">
+                    <label for="grouper">Grouper Count</label>
+                    <input type="range" id="grouper" min="0" max="20" value="0" step="1">
+                    <span class="value-display" id="grouper-value">0</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Health Indicators</h3>
+                <div class="slider-container">
+                    <label for="coral-damage">Coral Damage (%)</label>
+                    <input type="range" id="coral-damage" min="0" max="100" value="0" step="1">
+                    <span class="value-display" id="coral-damage-value">0%</span>
+                </div>
+                <div class="slider-container">
+                    <label for="bleaching-population">Bleaching - Population (%)</label>
+                    <input type="range" id="bleaching-population" min="0" max="100" value="0" step="1">
+                    <span class="value-display" id="bleaching-population-value">0%</span>
+                </div>
+                <div class="slider-container">
+                    <label for="bleaching-colony">Bleaching - Colony (%)</label>
+                    <input type="range" id="bleaching-colony" min="0" max="100" value="0" step="1">
+                    <span class="value-display" id="bleaching-colony-value">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="gauge-container">
+            <div class="gauge">
+                <div class="gauge-background"></div>
+                <div class="gauge-content">
+                    <div class="prediction" id="prediction">Loading...</div>
+                    <div class="confidence" id="confidence">Please adjust values</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateTimeout;
+        const loading = document.querySelector('.loading');
+
+        // Update value displays and trigger prediction
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            const display = document.getElementById(`${input.id}-value`);
+            input.addEventListener('input', () => {
+                display.textContent = input.value + (input.id.includes('bleaching') || input.id === 'coral-damage' ? '%' : '');
+                // Debounce prediction updates
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(getPrediction, 500);
+            });
+        });
+
+        async function getPrediction() {
+            loading.classList.add('active');
+            
+            try {
+                const response = await fetch('http://localhost:5001/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cots: document.getElementById('cots').value,
+                        giant_clam: document.getElementById('giant-clam').value,
+                        parrotfish: document.getElementById('parrotfish').value,
+                        grouper: document.getElementById('grouper').value,
+                        coral_damage: document.getElementById('coral-damage').value,
+                        bleaching_population: document.getElementById('bleaching-population').value,
+                        bleaching_colony: document.getElementById('bleaching-colony').value
+                    })
+                });
+
+                const data = await response.json();
+                updateDisplay(data);
+            } catch (error) {
+                console.error('Prediction failed:', error);
+                document.getElementById('prediction').textContent = 'Error';
+                document.getElementById('confidence').textContent = 'Prediction service unavailable';
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        function updateDisplay(data) {
+            // Update prediction text
+            const predictionElem = document.getElementById('prediction');
+            predictionElem.textContent = data.prediction.charAt(0).toUpperCase() + data.prediction.slice(1);
+            predictionElem.className = `prediction ${data.prediction}`;
+            
+            // Find highest confidence
+            const maxConfidence = Math.max(...Object.values(data.probabilities));
+            document.getElementById('confidence').textContent = `${maxConfidence.toFixed(1)}% confident`;
+
+            // Update gauge rotation
+            const gaugeBackground = document.querySelector('.gauge-background');
+            let rotation = 0;
+            if (data.prediction === 'increase') rotation = 240;
+            else if (data.prediction === 'decrease') rotation = 0;
+            else rotation = 120;
+            
+            gaugeBackground.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        // Initial prediction
+        getPrediction();
+    </script>
+</body>
+</html>
