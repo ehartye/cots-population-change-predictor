@@ -8,6 +8,11 @@ from sklearn.metrics import classification_report, confusion_matrix
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
 import joblib
+import os.path
+
+# Get the directory containing this script
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), 'reefcheck.db')
 
 # Define key features at module level
 KEY_FEATURES = [
@@ -19,7 +24,7 @@ KEY_FEATURES = [
 ]
 
 def prepare_features():
-    conn = sqlite3.connect('../reefcheck.db')
+    conn = sqlite3.connect(DB_PATH)
     
     # Get all surveys with their COTS change status
     cots_changes = pd.read_sql_query("""
@@ -170,7 +175,8 @@ def train_model():
     print(feature_importance.head(15))
     
     # Save the pipeline
-    joblib.dump(pipeline, 'cots_predictor_pipeline.joblib')
+    model_path = os.path.join(SCRIPT_DIR, 'cots_predictor_pipeline.joblib')
+    joblib.dump(pipeline, model_path)
     print("\nModel pipeline saved to disk.")
     
     return pipeline
@@ -178,9 +184,10 @@ def train_model():
 def predict_site(site_id, pipeline=None):
     """Predict COTS change probability for a specific site"""
     if pipeline is None:
-        pipeline = joblib.load('cots_predictor_pipeline.joblib')
+        model_path = os.path.join(SCRIPT_DIR, 'cots_predictor_pipeline.joblib')
+        pipeline = joblib.load(model_path)
     
-    conn = sqlite3.connect('../reefcheck.db')
+    conn = sqlite3.connect(DB_PATH)
     
     # Get the latest survey for the site
     latest_survey = pd.read_sql_query("""
@@ -236,7 +243,7 @@ if __name__ == "__main__":
     pipeline = train_model()
     
     # Get a list of sites with sufficient data
-    conn = sqlite3.connect('../reefcheck.db')
+    conn = sqlite3.connect(DB_PATH)
     sites = pd.read_sql_query("""
         SELECT DISTINCT site_id 
         FROM belt 

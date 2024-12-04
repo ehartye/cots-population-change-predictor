@@ -41,12 +41,24 @@
             margin-bottom: 5px;
             color: #4a5568;
         }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         input[type="range"] {
-            width: 100%;
+            flex: 1;
+        }
+        input[type="number"] {
+            width: 70px;
+            padding: 4px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
         }
         .value-display {
             font-size: 0.9em;
             color: #718096;
+            min-width: 50px;
         }
         #gauge-container {
             text-align: center;
@@ -85,19 +97,18 @@
             position: relative;
             z-index: 1;
             text-align: center;
+            color: #000000;
         }
         .prediction {
             font-size: 1.5em;
             font-weight: bold;
             margin-bottom: 5px;
+            color: #000000;
         }
         .confidence {
             font-size: 1.2em;
-            color: #718096;
+            color: #000000;
         }
-        .increase { color: #f56565; }
-        .decrease { color: #48bb78; }
-        .none { color: #ecc94b; }
         .loading {
             position: fixed;
             top: 0;
@@ -113,6 +124,20 @@
         .loading.active {
             display: flex;
         }
+        .preset-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background: white;
+            font-size: 1em;
+        }
     </style>
 </head>
 <body>
@@ -122,47 +147,100 @@
     <div class="container">
         <h1>COTS Change Predictor</h1>
         
+        <div class="preset-selector">
+            <label for="preset">Quick Select Presets:</label>
+            <select id="preset">
+                <option value="">Select a preset...</option>
+                <option value="hardy-increase">Hardy Reef (92% Increase)</option>
+                <option value="low-isles-increase">Low Isles Reef (94% Increase)</option>
+                <option value="john-brewer-decrease">John Brewer Reef (87% Decrease)</option>
+                <option value="palm-island-decrease">Palm Island Reefs (82% Decrease)</option>
+            </select>
+        </div>
+
         <div class="controls">
             <div class="control-group">
-                <h3>Population Indicators</h3>
+                <h3>Fish Population</h3>
                 <div class="slider-container">
-                    <label for="cots">COTS Count</label>
-                    <input type="range" id="cots" min="0" max="20" value="0" step="1">
-                    <span class="value-display" id="cots-value">0</span>
+                    <label for="grouper-60-plus">Grouper > 60 cm</label>
+                    <div class="input-group">
+                        <input type="range" id="grouper-60-plus" min="0" max="1" value="0" step="0.25">
+                        <input type="number" id="grouper-60-plus-num" min="0" max="1" value="0" step="0.25">
+                    </div>
                 </div>
                 <div class="slider-container">
-                    <label for="giant-clam">Giant Clam Count</label>
-                    <input type="range" id="giant-clam" min="0" max="50" value="0" step="1">
-                    <span class="value-display" id="giant-clam-value">0</span>
+                    <label for="grouper-30-40">Grouper 30-40 cm</label>
+                    <div class="input-group">
+                        <input type="range" id="grouper-30-40" min="0" max="2" value="0" step="0.25">
+                        <input type="number" id="grouper-30-40-num" min="0" max="2" value="0" step="0.25">
+                    </div>
                 </div>
                 <div class="slider-container">
-                    <label for="parrotfish">Parrotfish Count</label>
-                    <input type="range" id="parrotfish" min="0" max="50" value="0" step="1">
-                    <span class="value-display" id="parrotfish-value">0</span>
+                    <label for="grouper-40-50">Grouper 40-50 cm</label>
+                    <div class="input-group">
+                        <input type="range" id="grouper-40-50" min="0" max="1" value="0" step="0.25">
+                        <input type="number" id="grouper-40-50-num" min="0" max="1" value="0" step="0.25">
+                    </div>
                 </div>
                 <div class="slider-container">
-                    <label for="grouper">Grouper Count</label>
-                    <input type="range" id="grouper" min="0" max="20" value="0" step="1">
-                    <span class="value-display" id="grouper-value">0</span>
+                    <label for="parrotfish">Parrotfish</label>
+                    <div class="input-group">
+                        <input type="range" id="parrotfish" min="0" max="6" value="0" step="0.25">
+                        <input type="number" id="parrotfish-num" min="0" max="6" value="0" step="0.25">
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <label for="humphead-wrasse">Humphead Wrasse</label>
+                    <div class="input-group">
+                        <input type="range" id="humphead-wrasse" min="0" max="1" value="0" step="0.25">
+                        <input type="number" id="humphead-wrasse-num" min="0" max="1" value="0" step="0.25">
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <label for="tripneustes">Tripneustes</label>
+                    <div class="input-group">
+                        <input type="range" id="tripneustes" min="0" max="15" value="0" step="0.25">
+                        <input type="number" id="tripneustes-num" min="0" max="15" value="0" step="0.25">
+                    </div>
                 </div>
             </div>
             
             <div class="control-group">
-                <h3>Health Indicators</h3>
+                <h3>Reef Health</h3>
                 <div class="slider-container">
-                    <label for="coral-damage">Coral Damage (%)</label>
-                    <input type="range" id="coral-damage" min="0" max="100" value="0" step="1">
-                    <span class="value-display" id="coral-damage-value">0%</span>
+                    <label for="giant-clam-40-50">Giant Clam 40-50 cm</label>
+                    <div class="input-group">
+                        <input type="range" id="giant-clam-40-50" min="0" max="1" value="0" step="0.25">
+                        <input type="number" id="giant-clam-40-50-num" min="0" max="1" value="0" step="0.25">
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <label for="giant-clam-50-plus">Giant Clam > 50 cm</label>
+                    <div class="input-group">
+                        <input type="range" id="giant-clam-50-plus" min="0" max="2" value="0" step="0.25">
+                        <input type="number" id="giant-clam-50-plus-num" min="0" max="2" value="0" step="0.25">
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <label for="coral-damage">Coral Damage Other</label>
+                    <div class="input-group">
+                        <input type="range" id="coral-damage" min="0" max="3" value="0" step="0.25">
+                        <input type="number" id="coral-damage-num" min="0" max="3" value="0" step="0.25">
+                    </div>
                 </div>
                 <div class="slider-container">
                     <label for="bleaching-population">Bleaching - Population (%)</label>
-                    <input type="range" id="bleaching-population" min="0" max="100" value="0" step="1">
-                    <span class="value-display" id="bleaching-population-value">0%</span>
+                    <div class="input-group">
+                        <input type="range" id="bleaching-population" min="0" max="65" value="0" step="0.25">
+                        <input type="number" id="bleaching-population-num" min="0" max="65" value="0" step="0.25">
+                    </div>
                 </div>
                 <div class="slider-container">
                     <label for="bleaching-colony">Bleaching - Colony (%)</label>
-                    <input type="range" id="bleaching-colony" min="0" max="100" value="0" step="1">
-                    <span class="value-display" id="bleaching-colony-value">0%</span>
+                    <div class="input-group">
+                        <input type="range" id="bleaching-colony" min="0" max="75" value="0" step="0.25">
+                        <input type="number" id="bleaching-colony-num" min="0" max="75" value="0" step="0.25">
+                    </div>
                 </div>
             </div>
         </div>
@@ -182,12 +260,94 @@
         let updateTimeout;
         const loading = document.querySelector('.loading');
 
-        // Update value displays and trigger prediction
-        document.querySelectorAll('input[type="range"]').forEach(input => {
-            const display = document.getElementById(`${input.id}-value`);
-            input.addEventListener('input', () => {
-                display.textContent = input.value + (input.id.includes('bleaching') || input.id === 'coral-damage' ? '%' : '');
-                // Debounce prediction updates
+        // Preset configurations
+        const presets = {
+            'hardy-increase': {
+                'bleaching-population': 17.25,
+                'bleaching-colony': 32.25,
+                'coral-damage': 2.50,
+                'giant-clam-40-50': 0,
+                'giant-clam-50-plus': 1.75,
+                'grouper-60-plus': 0,
+                'grouper-30-40': 0,
+                'grouper-40-50': 0,
+                'humphead-wrasse': 0,
+                'parrotfish': 0,
+                'tripneustes': 0
+            },
+            'low-isles-increase': {
+                'bleaching-population': 0,
+                'bleaching-colony': 0,
+                'coral-damage': 0.50,
+                'giant-clam-40-50': 0.50,
+                'giant-clam-50-plus': 1.25,
+                'grouper-60-plus': 0,
+                'grouper-30-40': 0,
+                'grouper-40-50': 0,
+                'humphead-wrasse': 0,
+                'parrotfish': 0,
+                'tripneustes': 0
+            },
+            'john-brewer-decrease': {
+                'bleaching-population': 25.00,
+                'bleaching-colony': 34.50,
+                'coral-damage': 1.50,
+                'giant-clam-40-50': 0.25,
+                'giant-clam-50-plus': 0,
+                'grouper-60-plus': 0,
+                'grouper-30-40': 0,
+                'grouper-40-50': 0,
+                'humphead-wrasse': 0,
+                'parrotfish': 0,
+                'tripneustes': 0
+            },
+            'palm-island-decrease': {
+                'bleaching-population': 4.25,
+                'bleaching-colony': 39.50,
+                'coral-damage': 2.25,
+                'giant-clam-40-50': 0,
+                'giant-clam-50-plus': 1.00,
+                'grouper-60-plus': 0,
+                'grouper-30-40': 1.00,
+                'grouper-40-50': 0,
+                'humphead-wrasse': 0,
+                'parrotfish': 5.25,
+                'tripneustes': 0
+            }
+        };
+
+        // Handle preset selection
+        document.getElementById('preset').addEventListener('change', function() {
+            const selectedPreset = presets[this.value];
+            if (selectedPreset) {
+                Object.keys(selectedPreset).forEach(id => {
+                    const value = selectedPreset[id];
+                    document.getElementById(id).value = value;
+                    document.getElementById(id + '-num').value = value;
+                });
+                getPrediction();
+            }
+        });
+
+        // Calculate total grouper count
+        function calculateGrouper() {
+            return parseFloat(document.getElementById('grouper-60-plus').value) +
+                   parseFloat(document.getElementById('grouper-30-40').value) +
+                   parseFloat(document.getElementById('grouper-40-50').value);
+        }
+
+        // Sync slider and number input values
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            const numInput = document.getElementById(slider.id + '-num');
+            
+            slider.addEventListener('input', () => {
+                numInput.value = slider.value;
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(getPrediction, 500);
+            });
+
+            numInput.addEventListener('input', () => {
+                slider.value = numInput.value;
                 clearTimeout(updateTimeout);
                 updateTimeout = setTimeout(getPrediction, 500);
             });
@@ -203,13 +363,18 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        cots: document.getElementById('cots').value,
-                        giant_clam: document.getElementById('giant-clam').value,
-                        parrotfish: document.getElementById('parrotfish').value,
-                        grouper: document.getElementById('grouper').value,
-                        coral_damage: document.getElementById('coral-damage').value,
+                        grouper_60_plus: document.getElementById('grouper-60-plus').value,
+                        grouper_30_40: document.getElementById('grouper-30-40').value,
+                        grouper_40_50: document.getElementById('grouper-40-50').value,
+                        grouper_total: calculateGrouper(),
+                        giant_clam_40_50: document.getElementById('giant-clam-40-50').value,
+                        giant_clam_50_plus: document.getElementById('giant-clam-50-plus').value,
                         bleaching_population: document.getElementById('bleaching-population').value,
-                        bleaching_colony: document.getElementById('bleaching-colony').value
+                        bleaching_colony: document.getElementById('bleaching-colony').value,
+                        coral_damage: document.getElementById('coral-damage').value,
+                        humphead_wrasse: document.getElementById('humphead-wrasse').value,
+                        parrotfish: document.getElementById('parrotfish').value,
+                        tripneustes: document.getElementById('tripneustes').value
                     })
                 });
 
@@ -228,7 +393,6 @@
             // Update prediction text
             const predictionElem = document.getElementById('prediction');
             predictionElem.textContent = data.prediction.charAt(0).toUpperCase() + data.prediction.slice(1);
-            predictionElem.className = `prediction ${data.prediction}`;
             
             // Find highest confidence
             const maxConfidence = Math.max(...Object.values(data.probabilities));
