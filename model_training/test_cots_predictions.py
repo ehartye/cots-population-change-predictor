@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from predict_cots_changes import prepare_features
+from predict_cots_changes import prepare_features, KEY_FEATURES
 import joblib
 
 def test_known_events():
@@ -11,7 +11,7 @@ def test_known_events():
         print("Model not found. Please run predict_cots_changes.py first to train the model.")
         return
 
-    conn = sqlite3.connect('reefcheck.db')
+    conn = sqlite3.connect('../reefcheck.db')
     
     # Get all COTS change events
     print("Fetching known COTS change events...")
@@ -78,16 +78,10 @@ def test_known_events():
             
             # Show key indicators
             print("\nKey indicators at time of prediction:")
-            important_features = [
-                'COTS', 'COTS_presence', 'Coral Damage Other', 
-                'Bleaching (% Of Population)', 'Bleaching (% Of Colony)',
-                'Parrotfish', 'Grouper Total'
-            ]
-            for feature in important_features:
-                if feature in X.columns:
-                    value = X[feature].iloc[0]
-                    if value > 0:
-                        print(f"{feature}: {value:.2f}")
+            # Use all features from KEY_FEATURES list
+            for feature in KEY_FEATURES:
+                if feature in X.columns and X[feature].iloc[0] > 0:
+                    print(f"{feature}: {X[feature].iloc[0]:.2f}")
             
             # Track accuracy
             if prediction == event['actual_outcome']:
