@@ -1,10 +1,15 @@
 import sqlite3
 import pandas as pd
 import numpy as np
+import os
 from scipy import stats
 
+# Get the directory containing this script
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), 'reefcheck.db')
+
 def analyze_precursors():
-    conn = sqlite3.connect('reefcheck.db')
+    conn = sqlite3.connect(DB_PATH)
     
     # Get all COTS change events
     cots_changes = pd.read_sql_query("""

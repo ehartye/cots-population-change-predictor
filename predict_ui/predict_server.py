@@ -3,6 +3,7 @@ from flask_cors import CORS
 import joblib
 import pandas as pd
 import os.path
+from model_training.features import KEY_FEATURES
 
 app = Flask(__name__)
 # Configure CORS to allow requests from any origin
@@ -24,16 +25,6 @@ try:
 except FileNotFoundError:
     print("Model not found. Please run predict_cots_changes.py first to train the model.")
     exit(1)
-
-# Key features from the model
-KEY_FEATURES = [
-    'Grouper > 60 cm', 'Grouper 30-40 cm', 'Grouper 40-50 cm', 'Grouper Total',
-    'Giant Clam 40-50 cm', 'Giant Clam > 50 cm',
-    'Bleaching (% Of Population)', 'Bleaching (% Of Colony)',
-    'Coral Damage Other', 'Humphead Wrasse', 'Parrotfish', 'Tripneustes',
-    'has_bleaching', 'has_coral_damage', 'total_grouper',
-    'has_parrotfish', 'has_wrasse', 'total_giant_clam', 'has_tripneustes'
-]
 
 @app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
@@ -66,10 +57,9 @@ def predict():
     features.update({
         'has_bleaching': 1 if features['Bleaching (% Of Population)'] > 0 else 0,
         'has_coral_damage': 1 if features['Coral Damage Other'] > 0 else 0,
-        'total_grouper': features['Grouper Total'],
         'has_parrotfish': 1 if features['Parrotfish'] > 0 else 0,
         'has_wrasse': 1 if features['Humphead Wrasse'] > 0 else 0,
-        'total_giant_clam': features['Giant Clam 40-50 cm'] + features['Giant Clam > 50 cm'],
+        'total_giant_clam': float(data.get('total_giant_clam', 0)),
         'has_tripneustes': 1 if features['Tripneustes'] > 0 else 0
     })
     
