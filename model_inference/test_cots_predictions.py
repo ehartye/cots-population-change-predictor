@@ -4,15 +4,15 @@ from model_training.predict_cots_changes import prepare_features, KEY_FEATURES
 import joblib
 import os.path
 
-# Get the directory containing this script
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), 'reefcheck.db')
+# Get the project root directory
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(PROJECT_ROOT, 'reefcheck.db')
+MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'cots_predictor_pipeline.joblib')
 
 def test_known_events():
     # Load the trained model
     try:
-        model_path = os.path.join(SCRIPT_DIR, 'cots_predictor_pipeline.joblib')
-        pipeline = joblib.load(model_path)
+        pipeline = joblib.load(MODEL_PATH)
     except FileNotFoundError:
         print("Model not found. Please run predict_cots_changes.py first to train the model.")
         return

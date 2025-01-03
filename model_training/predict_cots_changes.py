@@ -1,3 +1,8 @@
+import os
+import sys
+# Add project root to Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import sqlite3
 import pandas as pd
 import numpy as np
@@ -8,13 +13,13 @@ from sklearn.metrics import classification_report, confusion_matrix
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
 import joblib
-import os.path
-from .features import KEY_FEATURES, prepare_features
-from .test_cots_predictions import test_known_events
+from model_training.features import KEY_FEATURES, prepare_features
+from model_training.test_cots_predictions import test_known_events
 
-# Get the directory containing this script
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), 'reefcheck.db')
+# Get the project root directory
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(PROJECT_ROOT, 'reefcheck.db')
+MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'cots_predictor_pipeline.joblib')
 
 def train_model():
     print("Preparing features...")
@@ -67,9 +72,8 @@ def train_model():
     print("\nTop 15 Most Important Features:")
     print(feature_importance.head(15))
     
-    # Save the pipeline
-    model_path = os.path.join(SCRIPT_DIR, 'cots_predictor_pipeline.joblib')
-    joblib.dump(pipeline, model_path)
+    # Save the pipeline to central models directory
+    joblib.dump(pipeline, MODEL_PATH)
     print("\nModel pipeline saved to disk.")
     
     return pipeline
@@ -77,8 +81,7 @@ def train_model():
 def predict_site(site_id, pipeline=None):
     """Predict COTS change probability for a specific site"""
     if pipeline is None:
-        model_path = os.path.join(SCRIPT_DIR, 'cots_predictor_pipeline.joblib')
-        pipeline = joblib.load(model_path)
+        pipeline = joblib.load(MODEL_PATH)
     
     conn = sqlite3.connect(DB_PATH)
     

@@ -3,6 +3,10 @@ from flask_cors import CORS
 import joblib
 import pandas as pd
 import os.path
+import sys
+import os
+# Add project root to Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_training.features import KEY_FEATURES
 
 app = Flask(__name__)
@@ -15,9 +19,9 @@ CORS(app, resources={
     }
 })
 
-# Get the directory containing this script
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(SCRIPT_DIR, 'cots_predictor_pipeline.joblib')
+# Get the project root directory (two levels up from this script)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'cots_predictor_pipeline.joblib')
 
 # Load the model
 try:

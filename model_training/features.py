@@ -1,10 +1,14 @@
+import os
+import sys
+# Add project root to Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import sqlite3
 import pandas as pd
-import os.path
 
-# Get the directory containing this script
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), 'reefcheck.db')
+# Get the project root directory
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(PROJECT_ROOT, 'reefcheck.db')
 
 # Define key features at module level
 KEY_FEATURES = [
