@@ -44,16 +44,15 @@ This will create a trained model file in the `models/` directory.
 
 The project includes a web interface for testing COTS predictions:
 
-2. Start the prediction server:
+1. Start the prediction server:
 ```bash
 cd predict_ui
 python predict_server.py
 ```
-The server will run on port 5001.
 
-3. Open `predict_ui/cots_predictor.html` in your web browser
+2. Open your web browser and navigate to `http://localhost:5001`
 
-4. Enter survey data values and click "Predict" to get COTS population change predictions
+3. Enter survey data values to get COTS population change predictions
 
 ## Model Features
 

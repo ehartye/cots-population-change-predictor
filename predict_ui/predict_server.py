@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
+import os.path
 import joblib
 import pandas as pd
 import os.path
@@ -9,15 +10,18 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_training.features import KEY_FEATURES
 
+STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 # Configure CORS to allow requests from any origin
-CORS(app, resources={
-    r"/predict": {
-        "origins": "*",
-        "methods": ["POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+CORS(app)
+
+@app.route('/')
+def index():
+    return send_from_directory(STATIC_DIR, 'cots_predictor.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(STATIC_DIR, filename)
 
 # Get the project root directory (two levels up from this script)
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
